@@ -5,32 +5,46 @@ import android.annotation.SuppressLint
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import fastcampus.part5.chapter2.ui.theme.MyApplicationTheme
+import fastcampus.part5.chapter2.viewmodel.MainViewModel
 import fastcampus.part5.di.R
 
-sealed class MainNavigationItem(var route: String, var name: String) { //3가지 네비게이션 항목 정의(각 항목은 route와 name)을 가진다.
+sealed class MainNavigationItem(
+    var route: String,
+    val icon: ImageVector,
+    var name: String
+) { //3가지 네비게이션 항목 정의(각 항목은 route와 name)을 가진다.
     //sealed class 는 계층 구조를 가진 클래스를 정의할 때 사용되는 클래스이다.
     //쉽게 이야기 하면 어떤 특정 상황에서 나타날 수 있는 모든 경우의 수를 하나로 묶는 역할
     //다양한 경우를 하나로 묶어주는 클래스, 안전하고 읽기쉬운 코드 작성가능하다.
     //주로 상태나 이벤트를 표현할 때 유용하다.
-    object Main : MainNavigationItem("Main", "Main")
-    object Category : MainNavigationItem("Category", "Category")
-    object MyPage : MainNavigationItem("MyPage", "MyPage")
+    object Main : MainNavigationItem("Main", Icons.Filled.Home, "Main")
+    object Category : MainNavigationItem("Category", Icons.Filled.Star, "Category")
+    object MyPage : MainNavigationItem("MyPage", Icons.Filled.AccountBox, "MyPage")
 }
 
 @Preview(showBackground = true)
@@ -44,17 +58,32 @@ fun DefaultPreview() {
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun MainScreen() { //화면의 주요 구조 정의
+    val viewModel = hiltViewModel<MainViewModel>()
     val scaffoldState = rememberScaffoldState() //scaffold 상태 저장하는 객체
     val navController = rememberNavController() //navController는 네비게이션 컨트롤러를 생성해서 화면간의 이동을 관리한다.
 
     Scaffold(
+        topBar = { Header(viewModel) },
         scaffoldState = scaffoldState,
         bottomBar = {
             MainBottomNavigationBar(navController = navController)
         }
     ) {
-        MainNavigationScreen(navController= navController)
+        MainNavigationScreen(navController = navController)
     }
+}
+
+@Composable
+fun Header(viewModel : MainViewModel) {
+    TopAppBar(title = { Text(text = "My App") },
+        actions = {
+            IconButton(onClick = {
+                viewModel.openSearchForm()
+            }) {
+                Icon(imageVector = Icons.Filled.Search, contentDescription = "SearchIcon")
+            }
+        }
+    )
 }
 
 @Composable
@@ -64,10 +93,7 @@ fun MainBottomNavigationBar(navController: NavHostController) {
         MainNavigationItem.Category,
         MainNavigationItem.MyPage
     )
-    BottomNavigation(
-        backgroundColor = Color(0xffffff),
-        contentColor = Color(0xff00ff00)
-    ) {
+    BottomNavigation {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         //navBackStackEntry는 네비게이션의 현재 상태를 나타내며, currentBackStackEntryAsState는 네비게이션 상태를 상태(State)로 관리한다.
         val currentRoute = navBackStackEntry?.destination?.route
@@ -75,6 +101,7 @@ fun MainBottomNavigationBar(navController: NavHostController) {
 
         bottomNavigationItems.forEach { item ->
             BottomNavigationItem(
+                icon = { Icon(item.icon, item.route) },
                 selected = currentRoute == item.route,
                 //현재 활성화된 경로가 이 item.route와 같다면, 이 아이템은 선택된 상태로 표시된다.
                 onClick = {
@@ -94,29 +121,24 @@ fun MainBottomNavigationBar(navController: NavHostController) {
                         //이전에 스택에서 제거된 화면의 상태를 복원한다.
                     }
                 },
-                icon = {
-                    Icon(
-                        painterResource(id = R.drawable.ic_launcher_foreground),
-                        item.route,
-                    )
-                },
-            )
+
+                )
         }
     }
 }
 
 @Composable
 fun MainNavigationScreen(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = MainNavigationItem.Main.route){
+    NavHost(navController = navController, startDestination = MainNavigationItem.Main.route) {
         //NavHost는 네비게이션의 중심으로, 여러화면을 정의하고 관리하는 역할을 한다.
         //NavHost는 전달받은 navController를 사용해서 화면 간의 네비게이션을 제어한다.
-        composable(MainNavigationItem.Main.route){
+        composable(MainNavigationItem.Main.route) {
             Text(text = "Hello Main")
         }
-        composable(MainNavigationItem.Category.route){
+        composable(MainNavigationItem.Category.route) {
             Text(text = "Hello Category")
         }
-        composable(MainNavigationItem.MyPage.route){
+        composable(MainNavigationItem.MyPage.route) {
             Text(text = "Hello MyPage")
         }
     }

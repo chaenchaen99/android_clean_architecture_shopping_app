@@ -19,7 +19,7 @@ import fastcampus.part5.chapter2.viewmodel.TempViewModel
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val viewModel : TempViewModel by viewModels()
+//    private val viewModel : MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
