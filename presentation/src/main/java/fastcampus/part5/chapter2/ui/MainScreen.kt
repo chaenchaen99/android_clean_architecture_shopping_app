@@ -29,6 +29,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import fastcampus.part5.chapter2.ui.main.MainInsideScreen
 import fastcampus.part5.chapter2.ui.theme.MyApplicationTheme
 import fastcampus.part5.chapter2.viewmodel.MainViewModel
 import fastcampus.part5.di.R
@@ -69,7 +70,7 @@ fun MainScreen() { //화면의 주요 구조 정의
             MainBottomNavigationBar(navController = navController)
         }
     ) {
-        MainNavigationScreen(navController = navController)
+        MainNavigationScreen(viewModel = viewModel, navController = navController)
     }
 }
 
@@ -128,12 +129,12 @@ fun MainBottomNavigationBar(navController: NavHostController) {
 }
 
 @Composable
-fun MainNavigationScreen(navController: NavHostController) {
+fun MainNavigationScreen(viewModel: MainViewModel, navController: NavHostController) {
     NavHost(navController = navController, startDestination = MainNavigationItem.Main.route) {
         //NavHost는 네비게이션의 중심으로, 여러화면을 정의하고 관리하는 역할을 한다.
         //NavHost는 전달받은 navController를 사용해서 화면 간의 네비게이션을 제어한다.
         composable(MainNavigationItem.Main.route) {
-            Text(text = "Hello Main")
+            MainInsideScreen(viewModel)
         }
         composable(MainNavigationItem.Category.route) {
             Text(text = "Hello Category")
